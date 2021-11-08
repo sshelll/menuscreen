@@ -128,6 +128,9 @@ func (menu *MenuScreen) fillScreen(lines []string) {
 		}
 		menu.setLineWithStyle(i+1, "  "+ln, style)
 		// highlight the cursor column
+		if menu.mode == modeS && i == 0 {
+			continue
+		}
 		menu.screen.SetContent(0, i+1, ' ', nil, defaultCursorColStyle)
 	}
 
