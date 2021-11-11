@@ -22,7 +22,7 @@ import (
 	"runtime/debug"
 )
 
-func (menu *MenuScreen) Start() {
+func (menu *MenuScreen) Start() *MenuScreen {
 
 	screen := menu.screen
 
@@ -39,7 +39,7 @@ func (menu *MenuScreen) Start() {
 	for {
 
 		if menu.IsShutdown() {
-			return
+			return menu
 		}
 
 		menu.refreshScreen()
