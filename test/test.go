@@ -10,6 +10,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer menu.Fini()
 	menu.SetTitle("TEST").
 		SetLine(0, "0th line").
 		SetLine(1, "1st line").

@@ -24,23 +24,20 @@ import (
 
 func (menu *MenuScreen) Start() *MenuScreen {
 
-	screen := menu.screen
-
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("panicked: %v\n", r)
 			debug.PrintStack()
 		}
-		if !menu.IsShutdown() {
-			screen.Fini()
-		}
+		menu.Fini()
 	}()
 
+	screen := menu.screen
 	menu.shutdownCtrl = make(chan struct{})
 
 	for {
 
-		if menu.IsShutdown() {
+		if menu.isShutdown() {
 			return menu
 		}
 
@@ -59,12 +56,20 @@ func (menu *MenuScreen) Start() *MenuScreen {
 
 }
 
-func (menu *MenuScreen) Shutdown() {
-	close(menu.shutdownCtrl)
-	menu.screen.Fini()
+func (menu *MenuScreen) Fini() {
+	if !menu.finished {
+		menu.screen.Fini()
+		menu.finished = true
+	}
 }
 
-func (menu *MenuScreen) IsShutdown() bool {
+func (menu *MenuScreen) shutdown() {
+	if !menu.isShutdown() {
+		close(menu.shutdownCtrl)
+	}
+}
+
+func (menu *MenuScreen) isShutdown() bool {
 	select {
 	case <-menu.shutdownCtrl:
 		return true

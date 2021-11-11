@@ -45,13 +45,13 @@ func (menu *MenuScreen) keyESC(*tcell.EventKey) {
 	if menu.mode == modeS {
 		menu.mode = modeN
 	} else if menu.mode == modeN {
-		menu.Shutdown()
+		menu.shutdown()
 	}
 }
 
 func (menu *MenuScreen) keyENTER(*tcell.EventKey) {
 	menu.confirmed = true
-	menu.Shutdown()
+	menu.shutdown()
 }
 
 func (menu *MenuScreen) keyBS(*tcell.EventKey) {

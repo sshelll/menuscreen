@@ -50,6 +50,7 @@ type MenuScreen struct {
 	lines        []string
 	matchedLns   matchedLines
 	confirmed    bool
+	finished     bool
 }
 
 func NewMenuScreen() (menuScreen *MenuScreen, err error) {
