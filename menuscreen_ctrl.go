@@ -31,7 +31,9 @@ func (menu *MenuScreen) Start() *MenuScreen {
 			log.Printf("panicked: %v\n", r)
 			debug.PrintStack()
 		}
-		screen.Fini()
+		if !menu.IsShutdown() {
+			screen.Fini()
+		}
 	}()
 
 	menu.shutdownCtrl = make(chan struct{})
@@ -59,6 +61,7 @@ func (menu *MenuScreen) Start() *MenuScreen {
 
 func (menu *MenuScreen) Shutdown() {
 	close(menu.shutdownCtrl)
+	menu.screen.Fini()
 }
 
 func (menu *MenuScreen) IsShutdown() bool {
