@@ -18,6 +18,7 @@ package menuscreen
 
 import (
 	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 )
@@ -53,6 +54,11 @@ func (menu *MenuScreen) SetLine(n int, content string) *MenuScreen {
 		newLines[n] = content
 		menu.lines = newLines
 	}
+	return menu
+}
+
+func (menu *MenuScreen) AppendLines(content ...string) *MenuScreen {
+	menu.lines = append(menu.lines, content...)
 	return menu
 }
 
@@ -168,7 +174,7 @@ func (*MenuScreen) calRuneWidthAndComb(c rune) (r rune, width int, comb []rune) 
 	return
 }
 
-func (*MenuScreen) calRuneWidth(s string) (w int){
+func (*MenuScreen) calRuneWidth(s string) (w int) {
 	for _, r := range s {
 		w += runewidth.RuneWidth(r)
 	}
