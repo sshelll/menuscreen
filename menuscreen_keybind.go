@@ -17,8 +17,9 @@
 package menuscreen
 
 import (
-	"github.com/gdamore/tcell/v2"
 	"strings"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 // This file includes all reserved key bind mapping.
@@ -32,12 +33,18 @@ import (
 func (menu *MenuScreen) keyUP(*tcell.EventKey) {
 	if menu.cursorY > 0 {
 		menu.cursorY--
+	} else if menu.mode == modeN {
+		menu.cursorY = len(menu.lines) - 1
+	} else if menu.mode == modeS {
+		menu.cursorY = len(menu.matchedLns) - 1
 	}
 }
 
 func (menu *MenuScreen) keyDOWN(*tcell.EventKey) {
 	if menu.checkCursor() {
 		menu.cursorY++
+	} else {
+		menu.cursorY = 0
 	}
 }
 
