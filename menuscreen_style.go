@@ -39,7 +39,7 @@ var (
 
 	defaultCursorColStyle = defaultContentStyle.Background(tcell.ColorDarkSlateGray)
 
-	defaultCursorColStyleLight = defaultChosenLineStyle
+	defaultCursorColStyleLight = defaultContentStyle
 
 	defaultQueryStyle = defaultContentStyle.
 				Italic(true)
