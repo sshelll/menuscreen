@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/SCU-SJL/menuscreen"
+
+	"github.com/sshelll/menuscreen"
 )
 
 func main() {
