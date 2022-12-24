@@ -29,7 +29,7 @@ var (
 
 	defaultChosenLineStyle = tcell.StyleDefault.
 				Foreground(tcell.ColorYellow).
-				Background(tcell.ColorDarkSlateGray).
+				Background(tcell.ColorReset).
 				Bold(true)
 
 	defaultChosenLineStyleLight = tcell.StyleDefault.
@@ -37,7 +37,7 @@ var (
 					Background(tcell.ColorReset).
 					Bold(true)
 
-	defaultCursorColStyle = defaultContentStyle.Background(tcell.ColorDarkSlateGray)
+	defaultCursorColStyle = defaultContentStyle
 
 	defaultCursorColStyleLight = defaultContentStyle
 
@@ -65,7 +65,7 @@ func SetQueryStyle(style tcell.Style) {
 	defaultQueryStyle = style
 }
 
-func SetDefaultLightStype() {
+func SetDefaultLightStyle() {
 	defaultChosenLineStyle = defaultChosenLineStyleLight
 	defaultCursorColStyle = defaultCursorColStyleLight
 }
