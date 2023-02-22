@@ -17,40 +17,51 @@
 package menuscreen
 
 import (
+	"log"
+	"runtime/debug"
+
 	"github.com/gdamore/tcell/v2"
 )
 
 // MenuScreen is a visible selector for input.
 //
 // Terminal will show the content below in the normal mode:
-//  -----------------
+//
+//	-----------------
+//
 // | ${Title}:       |
 // | ▸ ${1st line}   |
 // |   ${2nd line}   |
 // |   ${3rd line}   |
-//  -----------------
+//
+//	-----------------
 //
 // Once slash was pressed and MenuScreen entered query mode,
 // the screen will be like:
-//  -----------------------
+//
+//	-----------------------
+//
 // | ${Title}:             |
 // | /query                |
 // | ▸ ${1st matched line} |
 // |   ${2nd matched line} |
 // |   ${3rd matched line} |
-//  -----------------------
+//
+//	-----------------------
 type MenuScreen struct {
-	screen       tcell.Screen
-	keyBinder    *keyBinder
-	shutdownCtrl chan struct{}
-	mode         screenMode
-	cursorY      int
-	input        string
-	title        string
-	lines        []string
-	matchedLns   matchedLines
-	confirmed    bool
-	finished     bool
+	screen         tcell.Screen
+	keyBinder      *keyBinder
+	shutdownCtrl   chan struct{}
+	mode           screenMode
+	cursorY        int
+	query          []rune
+	input          []rune
+	inputCursorPos int
+	title          string
+	lines          []string
+	matchedLns     matchedLines
+	confirmed      bool
+	finished       bool
 }
 
 func NewMenuScreen() (menuScreen *MenuScreen, err error) {
@@ -81,11 +92,67 @@ func NewMenuScreen() (menuScreen *MenuScreen, err error) {
 		matchedLns: make([]*matchedLine, 0, 16),
 		mode:       modeN,
 		cursorY:    0,
-		input:      "",
+		query:      nil,
 		title:      "Menu",
 	}
 
 	menu.initKeyBinder()
 
 	return menu, nil
+}
+
+func (menu *MenuScreen) Start() *MenuScreen {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("panicked: %v\n", r)
+			debug.PrintStack()
+		}
+		menu.Fini()
+	}()
+
+	screen := menu.screen
+	menu.shutdownCtrl = make(chan struct{})
+
+	for {
+
+		if menu.isShutdown() {
+			return menu
+		}
+
+		menu.refreshScreen()
+
+		switch event := screen.PollEvent().(type) {
+		case *tcell.EventResize:
+			screen.Sync()
+		case *tcell.EventKey:
+			if fn := menu.keyBinder.find(event.Key()); fn != nil {
+				fn(event)
+			}
+		}
+
+	}
+
+}
+
+func (menu *MenuScreen) Fini() {
+	if !menu.finished {
+		menu.screen.Fini()
+		menu.finished = true
+	}
+}
+
+func (menu *MenuScreen) shutdown() {
+	if !menu.isShutdown() {
+		close(menu.shutdownCtrl)
+	}
+}
+
+func (menu *MenuScreen) isShutdown() bool {
+	select {
+	case <-menu.shutdownCtrl:
+		return true
+	default:
+		return false
+	}
 }

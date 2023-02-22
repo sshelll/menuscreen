@@ -48,34 +48,64 @@ func (menu *MenuScreen) keyDOWN(*tcell.EventKey) {
 	}
 }
 
-func (menu *MenuScreen) keyESC(*tcell.EventKey) {
+func (menu *MenuScreen) keyRIGHT(*tcell.EventKey) {
+	if menu.mode == modeI {
+		menu.inputCursorPos = min(menu.inputCursorPos+1, len(menu.input))
+	}
 	if menu.mode == modeS {
+		menu.inputCursorPos = min(menu.inputCursorPos+1, len(menu.query))
+	}
+}
+
+func (menu *MenuScreen) keyLEFT(*tcell.EventKey) {
+	if menu.mode == modeI || menu.mode == modeS {
+		menu.inputCursorPos = max(menu.inputCursorPos-1, 0)
+	}
+}
+
+func (menu *MenuScreen) keyESC(*tcell.EventKey) {
+	switch menu.mode {
+	case modeS, modeI:
 		menu.mode = modeN
-	} else if menu.mode == modeN {
+		menu.inputCursorPos = 0
+	default:
 		menu.shutdown()
 	}
 }
 
 func (menu *MenuScreen) keyENTER(*tcell.EventKey) {
 	menu.confirmed = true
+	menu.inputCursorPos = 0
 	menu.shutdown()
 }
 
 func (menu *MenuScreen) keyBS(*tcell.EventKey) {
 
-	if menu.mode != modeS {
+	if menu.mode == modeI {
+		if len(menu.input) == 0 {
+			return
+		}
+		newRunes := []rune(menu.input)
+		delPos := max(0, menu.inputCursorPos-1)
+		delPos = min(delPos, len(newRunes)-1)
+		newRunes = append(newRunes[:delPos], newRunes[delPos+1:]...)
+		menu.input = newRunes
+		menu.inputCursorPos = max(menu.inputCursorPos-1, 0)
 		return
 	}
 
-	if len(menu.input) == 0 {
-		return
+	if menu.mode == modeS {
+		if len(menu.query) == 0 {
+			return
+		}
+		newRunes := []rune(menu.query)
+		delPos := max(0, menu.inputCursorPos-1)
+		delPos = min(delPos, len(newRunes)-1)
+		newRunes = append(newRunes[:delPos], newRunes[delPos+1:]...)
+		menu.query = newRunes
+		menu.inputCursorPos = max(menu.inputCursorPos-1, 0)
+		menu.calMatchedLines()
 	}
-
-	rs := []rune(menu.input)
-	rs = rs[:len(rs)-1]
-	menu.input = string(rs)
-
-	menu.calMatchedLines()
 
 }
 
@@ -85,14 +115,28 @@ func (menu *MenuScreen) keyRUNE(ev *tcell.EventKey) {
 	runeName := menu.getRuneName(ev.Name())
 
 	if menu.mode == modeS {
-		menu.input += runeName
+		newRunes := append(cloneRuneSlice(menu.query)[:menu.inputCursorPos], []rune(runeName)...)
+		newRunes = append(newRunes, []rune(menu.query)[menu.inputCursorPos:]...)
+		menu.query = newRunes
 		menu.calMatchedLines()
+		menu.inputCursorPos = min(menu.inputCursorPos+1, len(menu.query))
+		return
+	}
+
+	if menu.mode == modeI {
+		newRunes := append(cloneRuneSlice(menu.input)[:menu.inputCursorPos], []rune(runeName)...)
+		newRunes = append(newRunes, []rune(menu.input)[menu.inputCursorPos:]...)
+		menu.input = newRunes
+		menu.inputCursorPos = min(menu.inputCursorPos+1, len(menu.input))
 		return
 	}
 
 	if menu.mode == modeN {
 		if runeName == slash {
 			menu.keySLASH()
+		}
+		if runeName == colon {
+			menu.keyCOLON()
 		}
 		return
 	}
@@ -102,12 +146,19 @@ func (menu *MenuScreen) keyRUNE(ev *tcell.EventKey) {
 // keySLASH key slash make MenuScreen enter search mode.
 func (menu *MenuScreen) keySLASH() {
 	menu.mode = modeS
-	menu.input = ""
+	menu.query = nil
 	menu.cursorY = 0
 	menu.matchedLns = make([]*matchedLine, 0, len(menu.lines))
 	for i, ln := range menu.lines {
 		menu.matchedLns = append(menu.matchedLns, &matchedLine{i, ln})
 	}
+}
+
+// keyCOLON key colon make MenuScreen enter insert mode.
+func (menu *MenuScreen) keyCOLON() {
+	menu.mode = modeI
+	menu.input = nil
+	menu.cursorY = 0
 }
 
 func (menu *MenuScreen) getRuneName(k string) string {
@@ -127,7 +178,7 @@ func (menu *MenuScreen) checkCursor() bool {
 func (menu *MenuScreen) calMatchedLines() {
 	matched := make([]*matchedLine, 0, len(menu.lines))
 	for i, ln := range menu.lines {
-		if strings.Contains(ln, menu.input) {
+		if strings.Contains(ln, string(menu.query)) {
 			matched = append(matched, &matchedLine{i, ln})
 		}
 	}
@@ -144,5 +195,7 @@ func (menu *MenuScreen) initKeyBinder() {
 	menu.keyBinder.bind(menu.keyRUNE, tcell.KeyRune)
 	menu.keyBinder.bind(menu.keyBS, tcell.KeyBackspace, tcell.KeyDEL, tcell.KeyDelete)
 	menu.keyBinder.bind(menu.keyESC, tcell.KeyEsc)
+	menu.keyBinder.bind(menu.keyLEFT, tcell.KeyLeft)
+	menu.keyBinder.bind(menu.keyRIGHT, tcell.KeyRight)
 
 }

@@ -68,6 +68,10 @@ func (menu *MenuScreen) ChosenLine() (idx int, ln string, ok bool) {
 	}
 	ok = true
 	idx = menu.cursorY
+	if menu.mode == modeI {
+		idx = -1
+		ln = string(menu.input)
+	}
 	if menu.mode == modeN && len(menu.lines) > 0 {
 		ln = menu.lines[idx]
 	}
@@ -91,10 +95,19 @@ func (menu *MenuScreen) refreshScreen() {
 	}
 
 	if menu.mode == modeS {
-		lns := append([]string{"/" + menu.input}, menu.matchedLns.Content()...)
+		lns := append([]string{"/" + string(menu.query)}, menu.matchedLns.Content()...)
 		menu.fillScreen(lns)
 		menu.resetChosenLine()
-		menu.screen.ShowCursor(menu.calRuneWidth(menu.input)+3, 1)
+		cell := cellCnt(menu.query[:menu.inputCursorPos])
+		menu.screen.ShowCursor(cell+3, 1)
+		return
+	}
+
+	if menu.mode == modeI {
+		lns := append([]string{":" + string(menu.input)}, menu.lines...)
+		menu.fillScreen(lns)
+		cell := cellCnt(menu.input[:menu.inputCursorPos])
+		menu.screen.ShowCursor(cell+3, 1)
 		return
 	}
 
