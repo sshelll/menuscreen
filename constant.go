@@ -23,6 +23,11 @@ const (
 	modeN screenMode = iota
 	// modeS insert mode, writable
 	modeS
+	// modeI insert mode, writable
+	modeI
 )
 
-const slash = "/"
+const (
+	slash = "/"
+	colon = ":"
+)

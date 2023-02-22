@@ -12,7 +12,7 @@
 ## Usage
 
 demo is `see ./test/test.go`.  
-when the screen started, you can press `/` to search and press `enter` to confirm.
+when the screen started, you can press `/` to search and press `enter` to confirm, or you can press `:` to enter your customized content instead of choosing one.
 
 ## Demo
 
