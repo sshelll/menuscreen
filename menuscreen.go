@@ -17,7 +17,6 @@
 package menuscreen
 
 import (
-	"log"
 	"runtime/debug"
 
 	"github.com/gdamore/tcell/v2"
@@ -105,7 +104,7 @@ func (menu *MenuScreen) Start() *MenuScreen {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("panicked: %v\n", r)
+			println(r)
 			debug.PrintStack()
 		}
 		menu.Fini()
