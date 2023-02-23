@@ -90,6 +90,8 @@ func RunWorkflow(w Workflow) {
 			Start().
 			ChosenLine()
 
+		screen.Fini()
+
 		if !ok {
 			w = w.NextDefault()
 		} else {
