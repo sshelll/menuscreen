@@ -58,6 +58,9 @@ func (w *SimpleWorkflow) Next(chosenIdx int) Workflow {
 }
 
 func (w *SimpleWorkflow) NextDefault() Workflow {
+	if w.nextGlobal != nil {
+		return w.nextGlobal
+	}
 	return w.nextDefault
 }
 
