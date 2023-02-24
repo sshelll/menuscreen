@@ -10,6 +10,7 @@ type Workflow interface {
 	Callback() func()
 
 	// MenuItems returns the menu items of the workflow, which will be shown in the menu screen.
+	// If the menu items is empty, the workflow will not create a menu screen.
 	MenuItems() []string
 
 	// Next returns the next workflow of the workflow, which will be executed after choosing the item.
@@ -80,13 +81,19 @@ func RunWorkflow(w Workflow) {
 			w.Callback()()
 		}
 
+		menuItem := w.MenuItems()
+		if len(menuItem) == 0 {
+			w = w.NextDefault()
+			continue
+		}
+
 		screen, err := NewMenuScreen()
 		if err != nil {
 			log.Fatalln("init screen failed:", err)
 		}
 
 		idx, _, ok := screen.SetTitle(w.Title()).
-			SetLines(w.MenuItems()...).
+			SetLines(menuItem...).
 			Start().
 			ChosenLine()
 
