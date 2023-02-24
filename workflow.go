@@ -7,7 +7,7 @@ type Workflow interface {
 	Title() string
 
 	// Callback returns the callback of the workflow, which will be executed before choosing the next workflow.
-	Callback() func()
+	Callback() func(idx int, line string)
 
 	// MenuItems returns the menu items of the workflow, which will be shown in the menu screen.
 	// If the menu items is empty, the workflow will not create a menu screen.
@@ -24,7 +24,7 @@ type Workflow interface {
 type SimpleWorkflow struct {
 	title       string
 	items       []string
-	callback    func()
+	callback    func(int, string)
 	next        map[int]Workflow
 	nextDefault Workflow
 }
@@ -41,7 +41,7 @@ func (w *SimpleWorkflow) Title() string {
 	return w.title
 }
 
-func (w *SimpleWorkflow) Callback() func() {
+func (w *SimpleWorkflow) Callback() func(idx int, line string) {
 	return w.callback
 }
 
@@ -65,11 +65,17 @@ func (w *SimpleWorkflow) SetNextDefault(next Workflow) {
 	w.nextDefault = next
 }
 
-func (w *SimpleWorkflow) SetCallback(callback func()) {
+func (w *SimpleWorkflow) SetCallback(callback func(idx int, line string)) {
 	w.callback = callback
 }
 
 func RunWorkflow(w Workflow) {
+
+	var (
+		idx  int
+		line string
+		ok   bool
+	)
 
 	for {
 
@@ -78,7 +84,7 @@ func RunWorkflow(w Workflow) {
 		}
 
 		if w.Callback() != nil {
-			w.Callback()()
+			w.Callback()(idx, line)
 		}
 
 		menuItem := w.MenuItems()
@@ -92,7 +98,7 @@ func RunWorkflow(w Workflow) {
 			log.Fatalln("init screen failed:", err)
 		}
 
-		idx, _, ok := screen.SetTitle(w.Title()).
+		idx, line, ok = screen.SetTitle(w.Title()).
 			SetLines(menuItem...).
 			Start().
 			ChosenLine()
