@@ -25,15 +25,16 @@ type SimpleWorkflow struct {
 	title       string
 	items       []string
 	callback    func(int, string)
-	next        map[int]Workflow
+	nextMap     map[int]Workflow
 	nextDefault Workflow
+	nextGlobal  Workflow
 }
 
 func NewSimpleWorkflow(title string, items []string) *SimpleWorkflow {
 	return &SimpleWorkflow{
-		title: title,
-		items: items,
-		next:  make(map[int]Workflow),
+		title:   title,
+		items:   items,
+		nextMap: make(map[int]Workflow),
 	}
 }
 
@@ -50,7 +51,10 @@ func (w *SimpleWorkflow) MenuItems() []string {
 }
 
 func (w *SimpleWorkflow) Next(chosenIdx int) Workflow {
-	return w.next[chosenIdx]
+	if w.nextGlobal != nil {
+		return w.nextGlobal
+	}
+	return w.nextMap[chosenIdx]
 }
 
 func (w *SimpleWorkflow) NextDefault() Workflow {
@@ -58,11 +62,15 @@ func (w *SimpleWorkflow) NextDefault() Workflow {
 }
 
 func (w *SimpleWorkflow) SetNext(chosenIdx int, next Workflow) {
-	w.next[chosenIdx] = next
+	w.nextMap[chosenIdx] = next
 }
 
 func (w *SimpleWorkflow) SetNextDefault(next Workflow) {
 	w.nextDefault = next
+}
+
+func (w *SimpleWorkflow) SetNextGlobal(next Workflow) {
+	w.nextGlobal = next
 }
 
 func (w *SimpleWorkflow) SetCallback(callback func(idx int, line string)) {
