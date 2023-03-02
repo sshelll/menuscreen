@@ -18,16 +18,25 @@ type Workflow interface {
 
 	// NextDefault returns the default next workflow of the workflow, which will be executed if the user does not choose any item.
 	NextDefault() Workflow
+
+	// SetSelected sets the selected item of the workflow. See RunWorkflow for more details.
+	SetSelected(idx int, line string, ok bool)
+
+	// GetSelected returns the selected item of the workflow.
+	GetSelected() (idx int, line string, ok bool)
 }
 
 // SimpleWorkflow is a simple implementation of Workflow.
 type SimpleWorkflow struct {
-	title       string
-	items       []string
-	callback    func(int, string)
-	nextMap     map[int]Workflow
-	nextDefault Workflow
-	nextGlobal  Workflow
+	title        string
+	items        []string
+	callback     func(int, string)
+	nextMap      map[int]Workflow
+	nextDefault  Workflow
+	nextGlobal   Workflow
+	selected     bool
+	selectedIdx  int
+	selectedLine string
 }
 
 func NewSimpleWorkflow(title string, items []string) *SimpleWorkflow {
@@ -80,6 +89,16 @@ func (w *SimpleWorkflow) SetCallback(callback func(idx int, line string)) {
 	w.callback = callback
 }
 
+func (w *SimpleWorkflow) SetSelected(idx int, line string, ok bool) {
+	w.selected = true
+	w.selectedIdx = idx
+	w.selectedLine = line
+}
+
+func (w *SimpleWorkflow) GetSelected() (idx int, line string, ok bool) {
+	return w.selectedIdx, w.selectedLine, w.selected
+}
+
 func RunWorkflow(w Workflow) {
 
 	var (
@@ -113,6 +132,8 @@ func RunWorkflow(w Workflow) {
 			SetLines(menuItem...).
 			Start().
 			ChosenLine()
+
+		w.SetSelected(idx, line, ok)
 
 		screen.Fini()
 
