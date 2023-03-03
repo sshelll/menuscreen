@@ -1,8 +1,24 @@
 package menuscreen
 
-import "log"
+import (
+	"context"
+	"log"
+
+	"github.com/sshelll/sinfra/util"
+)
 
 type Workflow interface {
+	// ID returns the id of the workflow. This id should be unique.
+	ID() string
+
+	// Ctx returns the context of the workflow. See RunWorkflow for more details.
+	// Do not call this method in your code.
+	Ctx() context.Context
+
+	// SetCtx sets the context of the workflow. See RunWorkflow for more details.
+	// Do not call this method in your code.
+	SetCtx(ctx context.Context)
+
 	// Title returns the title of the workflow, which will be shown in the menu screen.
 	Title() string
 
@@ -19,32 +35,52 @@ type Workflow interface {
 	// NextDefault returns the default next workflow of the workflow, which will be executed if the user does not choose any item.
 	NextDefault() Workflow
 
-	// SetSelected sets the selected item of the workflow. See RunWorkflow for more details.
-	SetSelected(idx int, line string, ok bool)
-
 	// GetSelected returns the selected item of the workflow.
 	GetSelected() (idx int, line string, ok bool)
 }
 
 // SimpleWorkflow is a simple implementation of Workflow.
 type SimpleWorkflow struct {
-	title        string
-	items        []string
-	callback     func(int, string)
-	nextMap      map[int]Workflow
-	nextDefault  Workflow
-	nextGlobal   Workflow
-	selected     bool
-	selectedIdx  int
-	selectedLine string
+	// workflow info
+	id  string
+	ctx context.Context
+
+	// menu info
+	title string
+	items []string
+
+	// next workflow info
+	callback    func(int, string)
+	nextMap     map[int]Workflow
+	nextDefault Workflow
+	nextGlobal  Workflow
+}
+
+type selectResult struct {
+	selected bool
+	idx      int
+	line     string
 }
 
 func NewSimpleWorkflow(title string, items []string) *SimpleWorkflow {
 	return &SimpleWorkflow{
+		id:      util.UUID(),
 		title:   title,
 		items:   items,
 		nextMap: make(map[int]Workflow),
 	}
+}
+
+func (w *SimpleWorkflow) ID() string {
+	return w.id
+}
+
+func (w *SimpleWorkflow) Ctx() context.Context {
+	return w.ctx
+}
+
+func (w *SimpleWorkflow) SetCtx(ctx context.Context) {
+	w.ctx = ctx
 }
 
 func (w *SimpleWorkflow) Title() string {
@@ -89,14 +125,13 @@ func (w *SimpleWorkflow) SetCallback(callback func(idx int, line string)) {
 	w.callback = callback
 }
 
-func (w *SimpleWorkflow) SetSelected(idx int, line string, ok bool) {
-	w.selected = true
-	w.selectedIdx = idx
-	w.selectedLine = line
-}
-
 func (w *SimpleWorkflow) GetSelected() (idx int, line string, ok bool) {
-	return w.selectedIdx, w.selectedLine, w.selected
+	v := w.Ctx().Value(w.ID())
+	if v == nil {
+		return 0, "", false
+	}
+	selectResult := v.(*selectResult)
+	return selectResult.idx, selectResult.line, selectResult.selected
 }
 
 func RunWorkflow(w Workflow) {
@@ -106,6 +141,8 @@ func RunWorkflow(w Workflow) {
 		line string
 		ok   bool
 	)
+
+	ctx := context.Background()
 
 	for {
 
@@ -133,7 +170,12 @@ func RunWorkflow(w Workflow) {
 			Start().
 			ChosenLine()
 
-		w.SetSelected(idx, line, ok)
+		ctx = context.WithValue(ctx, w.ID(), &selectResult{
+			selected: ok,
+			idx:      idx,
+			line:     line,
+		})
+		w.SetCtx(ctx)
 
 		screen.Fini()
 
