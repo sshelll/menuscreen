@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/mattn/go-runewidth v0.0.15
-	github.com/sshelll/fzflib v1.0.1
+	github.com/sshelll/fzflib v1.0.3
 	github.com/sshelll/sinfra v0.0.0-20230303084508-746ce9e9ab3d
 )
 

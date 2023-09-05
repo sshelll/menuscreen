@@ -95,7 +95,7 @@ func NewMenuScreen() (menuScreen *MenuScreen, err error) {
 		cursorY:     0,
 		query:       nil,
 		title:       "Menu",
-		fuzzyFinder: fzflib.New().CaseSensitive(false).Normalize(true),
+		fuzzyFinder: fzflib.New().Normalize(false).Forward(true),
 	}
 
 	menu.initKeyBinder()

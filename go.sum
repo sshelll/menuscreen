@@ -14,8 +14,8 @@ github.com/mattn/go-runewidth v0.0.15/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.4 h1:8TfxU8dW6PdqD27gjM8MVNuicgxIjxpm4K7x4jp8sis=
 github.com/rivo/uniseg v0.4.4/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
-github.com/sshelll/fzflib v1.0.1 h1:JgnMTTvhbR+wGyI64BnekpV0Dur/5ikgEgxZK67Atr4=
-github.com/sshelll/fzflib v1.0.1/go.mod h1:LzJkCcGTGhxC4bjkn2pSVVbuOR/EA6Qr+uR9QCsNCpY=
+github.com/sshelll/fzflib v1.0.3 h1:tDx0n6BvfvGsyo566xnD6IuQkQC0Oc7v+Xlzf1bLOVY=
+github.com/sshelll/fzflib v1.0.3/go.mod h1:LzJkCcGTGhxC4bjkn2pSVVbuOR/EA6Qr+uR9QCsNCpY=
 github.com/sshelll/sinfra v0.0.0-20230303084508-746ce9e9ab3d h1:srovX9CmbKXCtWOR9JPH6hsIKtHIYYlAI/da25sWBbQ=
 github.com/sshelll/sinfra v0.0.0-20230303084508-746ce9e9ab3d/go.mod h1:y8TJ/A7m33PDRkzxB3LlYDUAa7fCNTL6fs7CJvpKuro=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

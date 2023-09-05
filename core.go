@@ -105,6 +105,7 @@ func (menu *MenuScreen) keyBS(*tcell.EventKey) {
 		newRunes = append(newRunes[:delPos], newRunes[delPos+1:]...)
 		menu.query = newRunes
 		menu.inputCursorPos = max(menu.inputCursorPos-1, 0)
+		menu.cursorY = 0
 		menu.calMatchedLines()
 	}
 
@@ -121,6 +122,7 @@ func (menu *MenuScreen) keyRUNE(ev *tcell.EventKey) {
 		menu.query = newRunes
 		menu.calMatchedLines()
 		menu.inputCursorPos = min(menu.inputCursorPos+1, len(menu.query))
+		menu.cursorY = 0
 		return
 	}
 
@@ -181,7 +183,13 @@ func (menu *MenuScreen) checkCursor() bool {
 
 func (menu *MenuScreen) calMatchedLines() {
 	matched := make([]*matchedLine, 0, len(menu.lines))
-	results := menu.fuzzyFinder.Clear().AppendTargets(menu.lines...).Match(string(menu.query))
+	if len(menu.query) == 0 {
+		for _, c := range menu.lines {
+			matched = append(matched, &matchedLine{content: c})
+		}
+		return
+	}
+	results := menu.fuzzyFinder.Clear().AppendTargets(menu.lines...).MergeMatch(string(menu.query))
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Score() < results[j].Score()
 	})

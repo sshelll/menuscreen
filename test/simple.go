@@ -17,6 +17,9 @@ func main() {
 		SetLine(1, "1st line").
 		SetLine(2, "2nd line").
 		SetLine(4, "4th line").
+		SetLine(5, "第五行a").
+		SetLine(6, "第六行ba").
+		SetLine(7, "7TH LINE").
 		Start()
 	idx, ln, ok := menu.ChosenLine()
 	if !ok {

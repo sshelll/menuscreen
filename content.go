@@ -122,7 +122,7 @@ func (menu *MenuScreen) resetChosenLine() {
 
 	if menu.mode == modeN {
 		// highlight the chosen line
-		menu.setLineWithStyle(menu.cursorY+1, "  "+menu.lines[menu.cursorY], defaultChosenLineStyle)
+		menu.setLineWithStyle(menu.cursorY+1, "  "+menu.lines[menu.cursorY], nil, defaultChosenLineStyle)
 		// draw the cursor arrow
 		menu.setRuneOfLine(0, menu.cursorY+1, '▸', defaultChosenLineStyle)
 		return
@@ -131,11 +131,8 @@ func (menu *MenuScreen) resetChosenLine() {
 	if menu.mode == modeS {
 		if len(menu.matchedLns) > 0 && menu.cursorY < len(menu.matchedLns) {
 			ln := menu.matchedLns[menu.cursorY]
-			menu.setLineWithStyle(2+menu.cursorY, "  "+ln.content, defaultChosenLineStyle)
+			menu.setLineWithStyle(2+menu.cursorY, "  "+ln.content, ln.pos, defaultChosenLineStyle)
 			menu.setRuneOfLine(0, menu.cursorY+2, '▸', defaultChosenLineStyle)
-			for _, p := range ln.pos {
-				menu.setRuneOfLine(p+2, menu.cursorY+2, rune(ln.content[p]), defaultHighlightStyle)
-			}
 		}
 		return
 	}
@@ -145,7 +142,7 @@ func (menu *MenuScreen) resetChosenLine() {
 func (menu *MenuScreen) fillScreen(lines matchedLines) {
 
 	// title
-	menu.setLineWithStyle(0, menu.title, defaultTitleStyle)
+	menu.setLineWithStyle(0, menu.title, nil, defaultTitleStyle)
 
 	// content
 	for i, ln := range lines {
@@ -153,10 +150,7 @@ func (menu *MenuScreen) fillScreen(lines matchedLines) {
 		if i == 0 && menu.mode == modeS {
 			style = defaultQueryStyle
 		}
-		menu.setLineWithStyle(i+1, "  "+ln.content, style)
-		for _, p := range ln.pos {
-			menu.setRuneOfLine(p+2, i+1, rune(ln.content[p]), defaultHighlightStyle)
-		}
+		menu.setLineWithStyle(i+1, "  "+ln.content, ln.pos, style)
 		// highlight the cursor column
 		if menu.mode == modeS && i == 0 {
 			continue
@@ -169,16 +163,26 @@ func (menu *MenuScreen) fillScreen(lines matchedLines) {
 	if menu.mode == modeS {
 		statistic = fmt.Sprintf("%d/%d", len(menu.matchedLns), len(menu.lines))
 	}
-	menu.setLineWithStyle(len(lines)+1, statistic, defaultContentStyle)
+	menu.setLineWithStyle(len(lines)+1, statistic, nil, defaultContentStyle)
 
 }
 
-func (menu *MenuScreen) setLineWithStyle(y int, content string, style tcell.Style) {
+func (menu *MenuScreen) setLineWithStyle(y int, content string, hlPos []int, style tcell.Style) {
 	x := 0
+	pset := make(map[int]struct{})
+	for _, p := range hlPos {
+		pset[p] = struct{}{}
+	}
+	pos := 0
 	for _, c := range content {
 		r, w, comb := menu.calRuneWidthAndComb(c)
-		menu.screen.SetContent(x, y, r, comb, style)
+		targetStyle := style
+		if _, ok := pset[pos-2]; ok {
+			targetStyle = defaultHighlightStyle
+		}
+		menu.screen.SetContent(x, y, r, comb, targetStyle)
 		x += w
+		pos++
 	}
 }
 
