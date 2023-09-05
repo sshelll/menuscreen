@@ -18,9 +18,21 @@ package menuscreen
 
 type matchedLines []*matchedLine
 
+func strSliceToMatchedLines(strs []string) matchedLines {
+	lns := make(matchedLines, 0, len(strs))
+	for i, s := range strs {
+		lns = append(lns, &matchedLine{
+			idx:     i,
+			content: s,
+		})
+	}
+	return lns
+}
+
 type matchedLine struct {
 	idx     int
 	content string
+	pos     []int
 }
 
 func (lns matchedLines) Content() []string {

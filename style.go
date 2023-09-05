@@ -43,6 +43,8 @@ var (
 
 	defaultQueryStyle = defaultContentStyle.
 				Italic(true)
+
+	defaultHighlightStyle = defaultContentStyle.Bold(true).Reverse(true)
 )
 
 func SetTitleStyle(style tcell.Style) {

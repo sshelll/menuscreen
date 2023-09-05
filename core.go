@@ -17,6 +17,7 @@
 package menuscreen
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -150,7 +151,10 @@ func (menu *MenuScreen) keySLASH() {
 	menu.cursorY = 0
 	menu.matchedLns = make([]*matchedLine, 0, len(menu.lines))
 	for i, ln := range menu.lines {
-		menu.matchedLns = append(menu.matchedLns, &matchedLine{i, ln})
+		menu.matchedLns = append(menu.matchedLns, &matchedLine{
+			idx:     i,
+			content: ln,
+		})
 	}
 }
 
@@ -177,10 +181,17 @@ func (menu *MenuScreen) checkCursor() bool {
 
 func (menu *MenuScreen) calMatchedLines() {
 	matched := make([]*matchedLine, 0, len(menu.lines))
-	for i, ln := range menu.lines {
-		if strings.Contains(ln, string(menu.query)) {
-			matched = append(matched, &matchedLine{i, ln})
+	results := menu.fuzzyFinder.Clear().AppendTargets(menu.lines...).Match(string(menu.query))
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Score() < results[j].Score()
+	})
+	for i, ln := range results {
+		mln := &matchedLine{
+			idx:     i,
+			content: ln.Content(),
+			pos:     ln.Pos(),
 		}
+		matched = append(matched, mln)
 	}
 	menu.matchedLns = matched
 }
