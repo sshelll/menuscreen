@@ -20,6 +20,7 @@ import (
 	"runtime/debug"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/sshelll/fzflib"
 )
 
 // MenuScreen is a visible selector for input.
@@ -61,6 +62,7 @@ type MenuScreen struct {
 	matchedLns     matchedLines
 	confirmed      bool
 	finished       bool
+	fuzzyFinder    *fzflib.Fzf
 }
 
 func NewMenuScreen() (menuScreen *MenuScreen, err error) {
@@ -86,13 +88,14 @@ func NewMenuScreen() (menuScreen *MenuScreen, err error) {
 	screen.Clear()
 
 	menu := &MenuScreen{
-		screen:     screen,
-		lines:      make([]string, 0, 16),
-		matchedLns: make([]*matchedLine, 0, 16),
-		mode:       modeN,
-		cursorY:    0,
-		query:      nil,
-		title:      "Menu",
+		screen:      screen,
+		lines:       make([]string, 0, 16),
+		matchedLns:  make([]*matchedLine, 0, 16),
+		mode:        modeN,
+		cursorY:     0,
+		query:       nil,
+		title:       "Menu",
+		fuzzyFinder: fzflib.New().CaseSensitive(false).Normalize(true),
 	}
 
 	menu.initKeyBinder()

@@ -89,13 +89,17 @@ func (menu *MenuScreen) refreshScreen() {
 
 	if menu.mode == modeN {
 		menu.screen.HideCursor()
-		menu.fillScreen(menu.lines)
+		menu.fillScreen(strSliceToMatchedLines(menu.lines))
 		menu.resetChosenLine()
 		return
 	}
 
 	if menu.mode == modeS {
-		lns := append([]string{"/" + string(menu.query)}, menu.matchedLns.Content()...)
+		lns := make([]*matchedLine, 0, 16)
+		lns = append(lns, &matchedLine{
+			content: "/" + string(menu.query),
+		})
+		lns = append(lns, menu.matchedLns...)
 		menu.fillScreen(lns)
 		menu.resetChosenLine()
 		cell := cellCnt(menu.query[:menu.inputCursorPos])
@@ -105,7 +109,7 @@ func (menu *MenuScreen) refreshScreen() {
 
 	if menu.mode == modeI {
 		lns := append([]string{":" + string(menu.input)}, menu.lines...)
-		menu.fillScreen(lns)
+		menu.fillScreen(strSliceToMatchedLines(lns))
 		cell := cellCnt(menu.input[:menu.inputCursorPos])
 		menu.screen.ShowCursor(cell+3, 1)
 		return
@@ -125,16 +129,20 @@ func (menu *MenuScreen) resetChosenLine() {
 	}
 
 	if menu.mode == modeS {
-		if len(menu.matchedLns) > 0 {
-			menu.setLineWithStyle(2+menu.cursorY, "  "+menu.matchedLns[menu.cursorY].content, defaultChosenLineStyle)
+		if len(menu.matchedLns) > 0 && menu.cursorY < len(menu.matchedLns) {
+			ln := menu.matchedLns[menu.cursorY]
+			menu.setLineWithStyle(2+menu.cursorY, "  "+ln.content, defaultChosenLineStyle)
 			menu.setRuneOfLine(0, menu.cursorY+2, '▸', defaultChosenLineStyle)
+			for _, p := range ln.pos {
+				menu.setRuneOfLine(p+2, menu.cursorY+2, rune(ln.content[p]), defaultHighlightStyle)
+			}
 		}
 		return
 	}
 
 }
 
-func (menu *MenuScreen) fillScreen(lines []string) {
+func (menu *MenuScreen) fillScreen(lines matchedLines) {
 
 	// title
 	menu.setLineWithStyle(0, menu.title, defaultTitleStyle)
@@ -145,7 +153,10 @@ func (menu *MenuScreen) fillScreen(lines []string) {
 		if i == 0 && menu.mode == modeS {
 			style = defaultQueryStyle
 		}
-		menu.setLineWithStyle(i+1, "  "+ln, style)
+		menu.setLineWithStyle(i+1, "  "+ln.content, style)
+		for _, p := range ln.pos {
+			menu.setRuneOfLine(p+2, i+1, rune(ln.content[p]), defaultHighlightStyle)
+		}
 		// highlight the cursor column
 		if menu.mode == modeS && i == 0 {
 			continue
