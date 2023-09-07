@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/sshelll/fzflib"
 )
 
 // This file includes all reserved key bind mapping.
@@ -197,15 +198,38 @@ func (menu *MenuScreen) calMatchedLines() {
 		}
 		return
 	}
-	results := menu.fuzzyFinder.Clear().AppendTargets(menu.lines...).MergeMatch(string(menu.query))
+
+	fzf := menu.fuzzyFinder.Clear()
+	var results []*fzflib.MatchResult
+
+	if len(menu.items) == 0 {
+		// match by lines
+		results = fzf.AppendTargets(menu.lines...).MergeMatch(string(menu.query))
+	} else {
+		// match by items
+		for _, item := range menu.items {
+			fzf.AppendItems(&fzflib.Item{
+				Content: item.Content,
+				Any:     item.Item,
+			})
+		}
+		results = fzf.MergeMatchItem(string(menu.query))
+	}
+
+	// sort by score
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Score() < results[j].Score()
 	})
+
 	for i, ln := range results {
 		mln := &matchedLine{
 			idx:     i,
 			content: ln.Content(),
 			pos:     ln.Pos(),
+		}
+		if ln.Item() != nil {
+			mln.item = ln.Item().Any
+			mln.content = ln.Item().Content
 		}
 		matched = append(matched, mln)
 	}

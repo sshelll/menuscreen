@@ -23,6 +23,11 @@ import (
 	"github.com/mattn/go-runewidth"
 )
 
+type MenuItem struct {
+	Content string
+	Item    any
+}
+
 func (menu *MenuScreen) SetTitle(title string) *MenuScreen {
 	menu.title = title
 	return menu
@@ -57,6 +62,8 @@ func (menu *MenuScreen) SetLine(n int, content string) *MenuScreen {
 	return menu
 }
 
+// AppendLines append lines to the end of the menu.
+// WARN: do not call AppendItems and AppendLines at the same time.
 func (menu *MenuScreen) AppendLines(content ...string) *MenuScreen {
 	menu.lines = append(menu.lines, content...)
 	return menu
@@ -78,6 +85,42 @@ func (menu *MenuScreen) ChosenLine() (idx int, ln string, ok bool) {
 	if menu.mode == modeS && len(menu.matchedLns) > 0 {
 		ln = menu.matchedLns[idx].content
 		idx = menu.matchedLns[idx].idx
+	}
+	return
+}
+
+// AppendItems append items to the end of the menu.
+// WARN: do not call AppendItems and AppendLines at the same time.
+func (menu *MenuScreen) AppendItems(items ...*MenuItem) *MenuScreen {
+	menu.items = append(menu.items, items...)
+	for _, item := range items {
+		menu.lines = append(menu.lines, item.Content)
+	}
+	return menu
+}
+
+func (menu *MenuScreen) ChosenItem() (idx int, item *MenuItem, ok bool) {
+	if !menu.confirmed {
+		return -1, nil, false
+	}
+	ok = true
+	idx = menu.cursorY
+	if menu.mode == modeI {
+		idx = -1
+		item = &MenuItem{
+			Content: string(menu.input),
+		}
+	}
+	if menu.mode == modeN && len(menu.lines) > 0 {
+		item = menu.items[idx]
+	}
+	if menu.mode == modeS && len(menu.matchedLns) > 0 {
+		m := menu.matchedLns[idx]
+		idx = m.idx
+		item = &MenuItem{
+			Content: m.content,
+			Item:    m.item,
+		}
 	}
 	return
 }

@@ -59,6 +59,7 @@ type MenuScreen struct {
 	inputCursorPos int
 	title          string
 	lines          []string
+	items          []*MenuItem
 	matchedLns     matchedLines
 	confirmed      bool
 	finished       bool

@@ -33,6 +33,7 @@ type matchedLine struct {
 	idx     int
 	content string
 	pos     []int
+	item    any
 }
 
 func (lns matchedLines) Content() []string {
