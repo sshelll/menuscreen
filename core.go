@@ -135,11 +135,19 @@ func (menu *MenuScreen) keyRUNE(ev *tcell.EventKey) {
 	}
 
 	if menu.mode == modeN {
-		if runeName == slash {
+		switch runeName {
+		case slash:
 			menu.keySLASH()
-		}
-		if runeName == colon {
+		case colon:
 			menu.keyCOLON()
+		case "h":
+			menu.keyLEFT(ev)
+		case "j":
+			menu.keyDOWN(ev)
+		case "k":
+			menu.keyUP(ev)
+		case "l":
+			menu.keyRIGHT(ev)
 		}
 		return
 	}
