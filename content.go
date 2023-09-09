@@ -127,17 +127,20 @@ func (menu *MenuScreen) ChosenItem() (idx int, item *MenuItem, ok bool) {
 
 func (menu *MenuScreen) refreshScreen() {
 
-	menu.screen.Clear()
 	defer menu.screen.Show()
 
-	if menu.mode == modeN {
+	switch menu.mode {
+	case modeN:
+		// PERF: only fill screen when the screen is not filled.
+		if !menu.hasFilled {
+			menu.screen.Clear()
+			menu.fillScreen(strSliceToMatchedLines(menu.lines))
+			menu.hasFilled = true
+		}
 		menu.screen.HideCursor()
-		menu.fillScreen(strSliceToMatchedLines(menu.lines))
 		menu.resetChosenLine()
-		return
-	}
-
-	if menu.mode == modeS {
+	case modeS:
+		menu.screen.Clear()
 		lns := make([]*matchedLine, 0, 16)
 		lns = append(lns, &matchedLine{
 			content: "/" + string(menu.query),
@@ -147,15 +150,12 @@ func (menu *MenuScreen) refreshScreen() {
 		menu.resetChosenLine()
 		cell := cellCnt(menu.query[:menu.inputCursorPos])
 		menu.screen.ShowCursor(cell+3, 1)
-		return
-	}
-
-	if menu.mode == modeI {
+	case modeI:
+		menu.screen.Clear()
 		lns := append([]string{":" + string(menu.input)}, menu.lines...)
 		menu.fillScreen(strSliceToMatchedLines(lns))
 		cell := cellCnt(menu.input[:menu.inputCursorPos])
 		menu.screen.ShowCursor(cell+3, 1)
-		return
 	}
 
 }
@@ -164,6 +164,8 @@ func (menu *MenuScreen) refreshScreen() {
 func (menu *MenuScreen) resetChosenLine() {
 
 	if menu.mode == modeN {
+		// reset last chosen line
+		menu.setLineWithStyle(menu.lastCursorY+1, "  "+menu.lines[menu.lastCursorY], nil, defaultContentStyle)
 		// highlight the chosen line
 		menu.setLineWithStyle(menu.cursorY+1, "  "+menu.lines[menu.cursorY], nil, defaultChosenLineStyle)
 		// draw the cursor arrow

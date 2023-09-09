@@ -33,6 +33,7 @@ import (
 // 'backspace' means rollback the last char from input;
 
 func (menu *MenuScreen) keyUP(*tcell.EventKey) {
+	menu.lastCursorY = menu.cursorY
 	if menu.cursorY > 0 {
 		menu.cursorY--
 	} else if menu.mode == modeN {
@@ -43,6 +44,7 @@ func (menu *MenuScreen) keyUP(*tcell.EventKey) {
 }
 
 func (menu *MenuScreen) keyDOWN(*tcell.EventKey) {
+	menu.lastCursorY = menu.cursorY
 	if menu.checkCursor() {
 		menu.cursorY++
 	} else {
@@ -70,6 +72,8 @@ func (menu *MenuScreen) keyESC(*tcell.EventKey) {
 	case modeS, modeI:
 		menu.mode = modeN
 		menu.inputCursorPos = 0
+		menu.hasFilled = false
+		menu.cursorY, menu.lastCursorY = 0, 0
 	default:
 		menu.shutdown()
 	}
@@ -106,7 +110,7 @@ func (menu *MenuScreen) keyBS(*tcell.EventKey) {
 		newRunes = append(newRunes[:delPos], newRunes[delPos+1:]...)
 		menu.query = newRunes
 		menu.inputCursorPos = max(menu.inputCursorPos-1, 0)
-		menu.cursorY = 0
+		menu.cursorY, menu.lastCursorY = 0, 0
 		menu.calMatchedLines()
 	}
 
