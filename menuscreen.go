@@ -54,6 +54,7 @@ type MenuScreen struct {
 	shutdownCtrl   chan struct{}
 	mode           screenMode
 	cursorY        int
+	lastCursorY    int
 	query          []rune
 	input          []rune
 	inputCursorPos int
@@ -64,6 +65,7 @@ type MenuScreen struct {
 	confirmed      bool
 	finished       bool
 	fuzzyFinder    *fzflib.Fzf
+	hasFilled      bool
 }
 
 func NewMenuScreen() (menuScreen *MenuScreen, err error) {
